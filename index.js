@@ -6,10 +6,15 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.MONGODB_URI;
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceKey.json");
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_KEY);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+
+
 app.use(cors());
 app.use(express.json());
 
@@ -36,10 +41,9 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const db = client.db("Movie-Master-Pro");
     const movieCollections = db.collection("All Movies");
     const watchedCollections = db.collection("watchList");
@@ -106,6 +110,7 @@ async function run() {
         deletedCount: result.deletedCount,
       });
     });
+
     // Top 6 latestMovies
     app.get("/latest-movie", async (req, res) => {
       const result = await movieCollections
@@ -184,7 +189,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB successfully!");
   } finally {
   }
