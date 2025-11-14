@@ -36,8 +36,6 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// let movieCollections;
-// let watchedCollections;
 
 async function run() {
   try {
