@@ -106,7 +106,7 @@ async function run() {
     });
 
 
-      app.get("/my-collection", verifyToken, async (req, res) => {
+      app.get("/movie/my-collection", verifyToken, async (req, res) => {
   try {
     const email = req.query.email;
     const result = await movieCollections.find({ addedBy: email }).toArray();
