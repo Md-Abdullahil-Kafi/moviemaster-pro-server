@@ -99,9 +99,15 @@ async function run() {
       }
       res.json({ success: true, message: "Movie deleted", deletedCount: result.deletedCount });
     });
-
+    // Top 6 latestMovies 
     app.get("/latest-movie", async (req, res) => {
       const result = await movieCollections.find().sort({ created_at: -1 }).limit(6).toArray();
+      res.send(result);
+    });
+
+    // Top Rated 5 Movies 
+    app.get("/topMovies", async (req, res) => {
+      const result = await movieCollections.find().sort({ rating: -1 }).limit(5).toArray();
       res.send(result);
     });
 
@@ -116,6 +122,56 @@ async function run() {
     res.status(500).json({ message: "Server error", error: error.message });
   }
       });
+
+
+      //Genre Movie Filtering 
+
+      // replace your /movies route with this:
+app.get("/genreMovies", async (req, res) => {
+  try {
+    const { genres, minRating, maxRating } = req.query; // genres expected comma separated: "Action,Comedy"
+
+    const filter = {};
+
+    // 1) Genres filter
+    if (genres) {
+      const arr = genres
+        .split(",")
+        .map((g) => g.trim())
+        .filter(Boolean);
+
+      // If your movie documents store genre as a single exact string, use $in:
+      // e.g. { genre: "Action" } or genre: ["Action","Adventure"]
+      filter.genre = { $in: arr };
+
+      // If your genre field sometimes contains comma-separated string like "Action, Adventure"
+      // or you want case-insensitive partial match, replace the above line with:
+      // filter.$or = arr.map(g => ({ genre: { $regex: g, $options: 'i' } }));
+    }
+
+    // 2) Rating range filter
+    if (minRating !== undefined || maxRating !== undefined) {
+      // ensure numeric
+      const ratingFilter = {};
+      if (minRating !== undefined && minRating !== "") ratingFilter.$gte = Number(minRating);
+      if (maxRating !== undefined && maxRating !== "") ratingFilter.$lte = Number(maxRating);
+      // apply only if at least one bound present
+      if (Object.keys(ratingFilter).length > 0) {
+        filter.rating = ratingFilter;
+      }
+    }
+
+    // Optional: console.log for debugging
+    // console.log("Filter used:", JSON.stringify(filter));
+
+    const result = await movieCollections.find(filter).toArray();
+    res.send(result);
+  } catch (err) {
+    console.error("Error in /movies route:", err);
+    res.status(500).send({ message: "Server error" });
+  }
+});
+
 
 
 
